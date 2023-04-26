@@ -9,6 +9,19 @@ struct List
    int tamanho;
 };
 
+struct Stack
+{
+   int pilha[MAX_SIZE];
+   int topo;
+};
+
+struct NoPilha
+{
+   int id;
+   struct Stack pilha;
+   struct No *proximo;
+};
+
 struct No
 {
    int id;
@@ -17,6 +30,8 @@ struct No
 };
 
 typedef struct No No;
+
+typedef struct NoPilha NoPilha;
 
 void insere(struct List **l, int valor, int chave)
 {
@@ -143,6 +158,23 @@ void inverterLista(struct List **l)
    printf("Lista invertida com sucesso!\n");
 }
 
+void bubbleSort(struct List **l, int n)
+{
+   int i, j;
+   for (i = 0; i < n - 1; i++)
+   {
+      for (j = 0; j < n - i - 1; j++)
+      {
+         if ((*l)->elemento[j] > (*l)->elemento[j + 1])
+         {
+            int temp = (*l)->elemento[j];
+            (*l)->elemento[j] = (*l)->elemento[j + 1];
+            (*l)->elemento[j + 1] = temp;
+         }
+      }
+   }
+}
+
 void editarLista(struct List *lista, int Id)
 {
    int opcao, elemento, chave, flag = 1;
@@ -158,6 +190,7 @@ void editarLista(struct List *lista, int Id)
       printf("4 - Encontrar Minimo e Maximo\n");
       printf("5 - Inverter Lista\n");
       printf("6 - Remover Duplicatas da Lista\n");
+      printf("7 - Ordenar Lista em Ordem Crescente\n");
       printf("0 - Sair\n");
       scanf("%d", &opcao);
 
@@ -252,6 +285,67 @@ void editarLista(struct List *lista, int Id)
          printf("Duplicatas removidas com sucesso!\n");
          system("pause");
          break;
+      case 7:
+         system("cls");
+         bubbleSort(&lista, lista->tamanho);
+         printf("Lista ordenada com sucesso!\n");
+         system("pause");
+         break;
+      case 0:
+         printf("Saindo...\n");
+         flag = 0;
+         system("pause");
+         break;
+      default:
+         printf("Opção inválida!\n");
+         break;
+      }
+   } while (flag != 0);
+}
+
+void editarPilha(struct Stack *pilha, int Id)
+{
+   int opcao, elemento, flag = 1;
+
+   do
+   {
+      system("cls");
+      printf("Editando Pilha de Id: %d\n\n", Id);
+      printf("Escolha uma opcao:\n");
+      printf("1 - Adicionar elemento\n");
+      printf("2 - Remover elemento\n");
+      printf("3 - Listar elementos\n");
+      printf("4 - Encontrar Topo\n");
+      printf("0 - Sair\n");
+      scanf("%d", &opcao);
+
+      switch (opcao)
+      {
+      case 1:
+         printf("Digite o elemento a ser adicionado: ");
+         scanf("%d", &elemento);
+         push(&pilha, elemento);
+
+         printf("Elemento adicionado com sucesso!\n");
+
+         system("pause");
+         break;
+      case 2:
+         pop(&pilha);
+         printf("Elemento removido com sucesso!\n");
+
+         system("pause");
+         break;
+      case 3:
+         system("cls");
+         print_stack(&pilha);
+         system("pause");
+         break;
+      case 4:
+         system("cls");
+         peek(&pilha);
+         system("pause");
+         break;
       case 0:
          printf("Saindo...\n");
          flag = 0;
@@ -292,6 +386,67 @@ void adicionarNo(No **cabeca, int id)
    novoNo->proximo = *cabeca;
 }
 
+void adicionarNoPilha(NoPilha **cabeca, int id)
+{
+   if (id == 0)
+   {
+      printf("Impossivel criar Elemento de ID 0");
+      return;
+   }
+
+   NoPilha *novoNo = (NoPilha *)malloc(sizeof(No));
+   novoNo->id = id;
+   novoNo->pilha.topo = -1;
+
+   if (*cabeca == NULL)
+   {
+      *cabeca = novoNo;
+   }
+   else
+   {
+      No *atual = *cabeca;
+      while (atual->proximo != *cabeca)
+      {
+         atual = atual->proximo;
+      }
+      atual->proximo = novoNo;
+   }
+   novoNo->proximo = *cabeca;
+}
+
+void removerNoPilha(NoPilha **cabeca, int id)
+{
+   if (*cabeca == NULL)
+   {
+      printf("A lista está vazia!\n");
+      return;
+   }
+   NoPilha *atual = *cabeca;
+   NoPilha *anterior = NULL;
+
+   do
+   {
+      if (atual->id == id)
+      {
+         if (anterior == NULL)
+         {
+            *cabeca = atual->proximo;
+         }
+         else
+         {
+            anterior->proximo = atual->proximo;
+         }
+         free(atual);
+         printf("Elemento removido com sucesso!\n");
+         return;
+      }
+      anterior = atual;
+      atual = atual->proximo;
+   } while (atual != *cabeca);
+
+   printf("Id Pilha não encontrado!\n");
+}
+
 void removerNo(No **cabeca, int id)
 {
    if (*cabeca == NULL)
@@ -328,9 +483,10 @@ void removerNo(No **cabeca, int id)
 void selecionarListaElementos(No **cabeca)
 {
    int id, i = 1;
-   if (cabeca == NULL)
+   if (*cabeca == NULL)
    {
-      printf("A lista está vazia!\n");
+      printf("A lista esta vazia!\n");
+      system("pause");
       return;
    }
    No *atual = *cabeca;
@@ -357,6 +513,118 @@ void selecionarListaElementos(No **cabeca)
       if (atual->id == id)
       {
          editarLista(&(atual->lista), atual->id);
+      }
+      atual = atual->proximo;
+   } while (atual != *cabeca);
+
+   printf("\n");
+}
+
+int is_empty(struct Stack ***p)
+{
+   if ((**p)->topo == -1)
+      return 0;
+   return 1;
+}
+
+int is_full(struct Stack ***p)
+{
+   if ((**p)->topo == MAX_SIZE - 1)
+      return 0;
+   return 1;
+}
+
+void push(struct Stack **p, int element)
+{
+   if (is_full(&p) == 0)
+   {
+      printf("Erro: pilha cheia.\n");
+   }
+   else
+   {
+      (*p)->topo++;
+      (*p)->pilha[(*p)->topo] = element;
+   }
+}
+
+int pop(struct Stack **p)
+{
+   if (is_empty(&p) == 0)
+   {
+      printf("Erro: pilha vazia.\n");
+      return -1;
+   }
+   else
+   {
+      int element = (*p)->pilha[(*p)->topo];
+      (*p)->topo--;
+      return element;
+   }
+}
+
+void peek(struct Stack **p)
+{
+   if (is_empty(&p) == 0)
+   {
+      printf("Erro: pilha vazia.\n");
+      return -1;
+   }
+   else
+   {
+      printf("Topo: %d\n\n" ,(*p)->pilha[(*p)->topo]);
+   }
+}
+
+void print_stack(struct Stack **p)
+{
+   if (is_empty(&p) == 0)
+   {
+      printf("Pilha vazia.\n");
+   }
+   else
+   {
+      printf("Elementos na pilha: ");
+      for (int i = 0; i <= (*p)->topo; i++)
+      {
+         printf(" %d |", (*p)->pilha[i]);
+      }
+      printf("\n\n");
+   }
+}
+
+void selecionarListaElementosPilha(NoPilha **cabeca)
+{
+   int id, i = 1;
+   if (*cabeca == NULL)
+   {
+      printf("A lista de pilhas esta vazia!\n");
+      system("pause");
+      return;
+   }
+   NoPilha *atual = *cabeca;
+   printf("\n0 para sair");
+   printf("         ID");
+   do
+   {
+      printf("\nPilha %d: %d ", i, atual->id);
+      atual = atual->proximo;
+      i++;
+   } while (atual != *cabeca);
+   printf("\n");
+
+   printf("\nDigite o ID da lista para selecionar: ");
+   scanf("%d", &id);
+
+   if (id == 0)
+      return;
+
+   atual = *cabeca;
+
+   do
+   {
+      if (atual->id == id)
+      {
+         editarPilha(&(atual->pilha), atual->id);
       }
       atual = atual->proximo;
    } while (atual != *cabeca);
@@ -484,6 +752,7 @@ int concatenarListaMesmoTamanho(No **cabeca)
 int main()
 {
    No *cabeca = NULL;
+   NoPilha *cabecaPilha = NULL;
    int opcao, elemento;
 
    do
@@ -495,6 +764,9 @@ int main()
       printf("3 - Remover Lista\n");
       printf("4 - Concatenar Listas de mesmo tamanho\n");
       printf("5 - Dividir uma Lista ao meio\n");
+      printf("6 - Escolher Pilha\n");
+      printf("7 - Criar Pilha\n");
+      printf("8 - Remover Pilha\n");
       printf("0 - Sair\n");
       scanf("%d", &opcao);
 
@@ -544,9 +816,9 @@ int main()
          system("pause");
          break;
       case 5:
-         if (cabeca == NULL)
+         if (cabecaPilha == NULL)
          {
-            printf("Não há listas!\n");
+            printf("Não há pilhas!\n");
          }
          else
          {
@@ -567,6 +839,37 @@ int main()
 
             adicionarNo(&cabeca, id + 99);
             dividirListaAoMeio(&cabeca, id);
+         }
+         system("pause");
+         break;
+      case 6:
+         selecionarListaElementosPilha(&cabecaPilha);
+         break;
+      case 7:
+         if (cabecaPilha == NULL || cabecaPilha->proximo == cabecaPilha)
+         {
+            printf("Digite um ID para a pilha de 10 elementos: ");
+            scanf("%d", &elemento);
+            adicionarNoPilha(&cabecaPilha, elemento);
+            printf("Pilha de 10 elementos criada com sucesso!\n");
+            system("pause");
+         }
+         else
+         {
+            printf("A lista de pilha já possui o máximo de elementos (5)!\n");
+            system("pause");
+         }
+         break;
+      case 8:
+         if (cabecaPilha == NULL)
+         {
+            printf("Não há pilhas!!\n");
+         }
+         else
+         {
+            printf("Digite o ID da lista a ser removida: ");
+            scanf("%d", &elemento);
+            removerNoPilha(&cabecaPilha, elemento);
          }
          system("pause");
          break;
