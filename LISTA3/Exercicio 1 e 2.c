@@ -84,9 +84,8 @@ void RemoverRepetidos(ListaLigada **cabeca)
     system("pause");
 }
 
-void main()
+void Modificarlista(ListaLigada **cabeca)
 {
-    ListaLigada *cabeca = NULL;
     int opcao, elemento;
 
     do
@@ -96,7 +95,7 @@ void main()
         printf("1 - Adicionar elemento\n");
         printf("2 - imprimir\n");
         printf("3 - Remove Repetidos\n");
-        printf("0 - Sair\n");
+        printf("0 - Voltar\n");
         scanf("%d", &opcao);
 
         switch (opcao)
@@ -113,12 +112,42 @@ void main()
             RemoverRepetidos(&cabeca);
             break;
         case 0:
-            printf("Saindo...\n");
+            printf("Voltando...\n");
             break;
         default:
             printf("Opção inválida!\n");
             break;
         }
+
+    } while (opcao != 0);
+}
+
+void main()
+{
+    ListaLigada *listaArray[5]; // Array de ponteiros para as listas
+    int opcao, elemento;
+
+    // Criando as listas
+    for (int i = 0; i < 5; i++)
+    {
+        listaArray[i] = (ListaLigada *)malloc(sizeof(ListaLigada));
+        listaArray[i]->elemento = i + 1;
+        listaArray[i]->proximo = NULL;
+    }
+
+    do
+    {
+        system("cls");
+        printf("Listas:\n\n");
+        for (int i = 0; i < 5; i++)
+        {
+            printf("Lista: %d\n", listaArray[i]->elemento);
+        }
+        printf("\npressione 0 para sair\n");
+        printf("Escolha o numero da lista para modificar:\n");
+
+        scanf("%d", &elemento);
+        Modificarlista(listaArray[elemento]);
 
     } while (opcao != 0);
 }
